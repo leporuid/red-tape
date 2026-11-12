@@ -68,5 +68,6 @@ in
       home-manager = import ../contrib/home-manager.nix;
       darwin = import ../contrib/darwin.nix;
       system-manager = import ../contrib/system-manager.nix;
+      hjem = import ../contrib/hjem.nix;
     };
 }

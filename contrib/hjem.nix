@@ -76,6 +76,7 @@
                 {
                   user = lib.mkDefault name;
                   directory = lib.mkDefault (if isDarwin then "/Users/${name}" else "/home/${name}");
+                  clobberFiles = lib.mkDefault true;
                 }
                 info.configPath
               ];

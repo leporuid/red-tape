@@ -1,7 +1,6 @@
 # contrib/hjem.nix — Hjem and Hjem-Rum host + module support with Manifest v3
 # https://github.com/feel-co/hjem
 # https://github.com/snugnug/hjem-rum
-# Inspired by paperdev-code/dendritic-nix & paperdev-code/hjem
 {
   name = "hjem";
   impl =
@@ -11,6 +10,10 @@
         {
           type = "hjem";
           file = "hjem-configuration.nix";
+        }
+        {
+          type = "hjem";
+          file = "home-configuration.nix";
         }
       ];
 
@@ -57,17 +60,23 @@
               else
                 { };
 
-            # Platform-specific Hjem core modules
+            # Platform-specific Hjem core modules + optional ecosystem extensions
             hjemModules = lib.flatten [
               (lib.optional (builtins.pathExists "${hjem}/modules/common/user.nix") "${hjem}/modules/common/user.nix")
               (lib.optional (!isDarwin && builtins.pathExists "${hjem}/modules/nixos/systemd.nix") "${hjem}/modules/nixos/systemd.nix")
               (lib.optional (isDarwin && builtins.pathExists "${hjem}/modules/darwin/user.nix") "${hjem}/modules/darwin/user.nix")
+              (lib.optional (inputs ? hjem-rum) inputs.hjem-rum.hjemModules.default)
+              (lib.optional (inputs ? hjem-impure) inputs.hjem-impure.hjemModules.default)
             ];
 
             evalResult = lib.evalModules {
               class = "hjem";
               modules = lib.flatten [
                 hjemModules
+                {
+                  user = lib.mkDefault name;
+                  directory = lib.mkDefault (if isDarwin then "/Users/${name}" else "/home/${name}");
+                }
                 info.configPath
               ];
               specialArgs = specialArgs // {

@@ -27,7 +27,8 @@ in
         pkgsFor
         ;
       hostTypes = coreHostTypes ++ results.contrib.scanHostTypes;
-      discovered = scanHosts (src + "/hosts") hostTypes;
+      discovered =
+        (scanHosts (src + "/users") hostTypes) // (scanHosts (src + "/hosts") hostTypes);
     in
     if discovered != { } then
       buildHosts {

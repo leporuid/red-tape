@@ -10,6 +10,14 @@ let
         type = "attrset";
         scope = "flake";
       };
+      hjemConfigurations = {
+        type = "attrset";
+        scope = "flake";
+      };
+      rumModules = {
+        type = "attrset";
+        scope = "flake";
+      };
     };
     inputs = {
       packages = {

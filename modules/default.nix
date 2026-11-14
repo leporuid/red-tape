@@ -14,6 +14,10 @@ let
         type = "attrset";
         scope = "flake";
       };
+      hjemModules = {
+        type = "attrset";
+        scope = "flake";
+      };
       rumModules = {
         type = "attrset";
         scope = "flake";

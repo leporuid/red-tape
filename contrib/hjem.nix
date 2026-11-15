@@ -40,8 +40,7 @@
             perSystem = builtins.mapAttrs (
               _: input:
               if builtins.isAttrs input then
-                (input.legacyPackages.${hostSystem} or { })
-                // (input.packages.${hostSystem} or { })
+                (input.legacyPackages.${hostSystem} or { }) // (input.packages.${hostSystem} or { })
               else
                 input
             ) inputs;
@@ -73,9 +72,6 @@
               (lib.optional (
                 !isDarwin && builtins.pathExists "${hjem}/modules/nixos/systemd.nix"
               ) "${hjem}/modules/nixos/systemd.nix")
-              (lib.optional (
-                isDarwin && builtins.pathExists "${hjem}/modules/darwin/user.nix"
-              ) "${hjem}/modules/darwin/user.nix")
               (lib.optional (inputs ? hjem-rum) inputs.hjem-rum.hjemModules.default)
               (lib.optional (inputs ? hjem-impure) inputs.hjem-impure.hjemModules.default)
             ];
@@ -92,7 +88,12 @@
                 info.configPath
               ];
               specialArgs = specialArgs // {
-                inherit perSystem pkgs hjem-lib utils;
+                inherit
+                  perSystem
+                  pkgs
+                  hjem-lib
+                  utils
+                  ;
                 hostName = name;
               };
             };
@@ -110,8 +111,10 @@
               (cfg.xdg.state.files or { })
             ];
 
-            activeFiles = lib.flatten (
-              map (set: lib.filter (file: file.enable or true) (builtins.attrValues set)) rawFiles
+            toManifestFile = hjem-lib.fileToJson or (f: f);
+
+            activeFiles = map toManifestFile (
+              lib.flatten (map (set: lib.filter (file: file.enable or true) (builtins.attrValues set)) rawFiles)
             );
 
             manifest = {

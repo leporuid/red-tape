@@ -165,4 +165,66 @@ in
       rumInvalid = false;
     };
   };
+
+  testHjemManifestFileToJson = {
+    expr =
+      let
+        res = buildHosts {
+          discovered = {
+            carol = {
+              type = "hjem";
+              configPath = builtins.toFile "carol-hjem.nix" ''
+                {
+                  files."gen.conf" = {
+                    target = ".config/gen.conf";
+                    source = "/nix/store/mock-gen";
+                    clobber = true;
+                    generator = _: "ignored";
+                  };
+                }
+              '';
+              hostPath = fixtures + "/hjem/users/alice";
+            };
+          };
+          inputs = {
+            hjem = {
+              outPath = fixtures + "/hjem/mock-hjem";
+              lib = {
+                fileToJson = f: {
+                  inherit (f) target source clobber;
+                };
+              };
+            };
+            inherit (flake.inputs) nixpkgs;
+          };
+          extraHostTypes = hjem.hostTypes;
+          defaultSystem = "x86_64-linux";
+          pkgsFor = system: {
+            _type = "pkgs";
+            inherit system;
+            inherit (flake.inputs.nixpkgs) lib;
+            stdenv.hostPlatform.isDarwin = false;
+            writeText = name: text: {
+              type = "derivation";
+              inherit name text;
+            };
+          };
+        };
+        carol = res.hjemConfigurations.carol;
+      in
+      {
+        files = carol.manifest.files;
+        hasBuildJson = builtins.stringLength carol.build.text > 0;
+      };
+    expected = {
+      files = [
+        {
+          target = ".config/gen.conf";
+          source = "/nix/store/mock-gen";
+          clobber = true;
+        }
+      ];
+      hasBuildJson = true;
+    };
+  };
 }

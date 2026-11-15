@@ -58,7 +58,10 @@
           inventory = output: {
             children = builtins.mapAttrs (name: _: {
               what = "Hjem module";
-              evalChecks.isValid = builtins.isAttrs output.${name} || builtins.isFunction output.${name};
+              evalChecks.isValid =
+                builtins.isAttrs output.${name}
+                || builtins.isFunction output.${name}
+                || builtins.isPath output.${name};
             }) output;
           };
         };
@@ -69,7 +72,10 @@
           inventory = output: {
             children = builtins.mapAttrs (name: _: {
               what = "Hjem-Rum module";
-              evalChecks.isValid = builtins.isAttrs output.${name} || builtins.isFunction output.${name};
+              evalChecks.isValid =
+                builtins.isAttrs output.${name}
+                || builtins.isFunction output.${name}
+                || builtins.isPath output.${name};
             }) output;
           };
         };

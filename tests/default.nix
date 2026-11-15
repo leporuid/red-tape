@@ -1,6 +1,7 @@
 # All tests — run with: nix-unit tests/default.nix
 let
-  adios-flake = (builtins.getFlake (toString ../.)).inputs.adios-flake;
+  flake = builtins.getFlake (toString ../.);
+  inherit (flake.inputs) adios-flake;
 
   prefix =
     pre: tests:
@@ -15,6 +16,7 @@ prefix "scanDir" (import ./scan-dir.nix)
 // prefix "discover" (import ./discover.nix)
 // prefix "integration" (import ./integration.nix)
 // prefix "hosts" (import ./hosts.nix)
+// prefix "hjem" (import ./hjem.nix { inherit flake; })
 // prefix "modules" (import ./modules-export.nix)
 // prefix "templates" (import ./templates.nix)
 // prefix "lib" (import ./lib-export.nix)

@@ -45,10 +45,16 @@ Then just add files following the conventions below.
 ├── hosts/
 │   ├── myhost/configuration.nix      # → nixosConfigurations.myhost
 │   └── custom/default.nix            # → nixosConfigurations.custom (custom builder)
+├── users/
+│   └── alice/hjem-configuration.nix  # → hjemConfigurations.alice (with contrib/hjem.nix)
 ├── modules/
-│   └── nixos/
-│       ├── server.nix                # → nixosModules.server
-│       └── injected.nix              # → nixosModules.injected
+│   ├── nixos/
+│   │   ├── server.nix                # → nixosModules.server
+│   │   └── injected.nix              # → nixosModules.injected
+│   ├── hjem/
+│   │   └── shell.nix                 # → hjemModules.shell (with contrib/hjem.nix)
+│   └── rum/
+│       └── fish.nix                  # → rumModules.fish (with contrib/hjem.nix)
 ├── templates/
 │   ├── default/flake.nix             # → templates.default
 │   └── minimal/flake.nix             # → templates.minimal
@@ -117,6 +123,7 @@ red-tape.mkFlake {
   modules = [
     (import "${inputs.red-tape}/contrib/darwin.nix")
     (import "${inputs.red-tape}/contrib/home-manager.nix")
+    (import "${inputs.red-tape}/contrib/hjem.nix")
     (import "${inputs.red-tape}/contrib/system-manager.nix")
   ];
 };
@@ -125,7 +132,10 @@ red-tape.mkFlake {
 This adds:
 - `darwin-configuration.nix` → `darwinConfigurations` + `modules/darwin/` → `darwinModules` (via nix-darwin)
 - `home-configuration.nix` → `homeConfigurations` + `modules/home/` → `homeModules` (via home-manager)
+- `hjem-configuration.nix` or `home-configuration.nix` (under `hosts/` or `users/`) → `hjemConfigurations` + `modules/hjem/` → `hjemModules` + `modules/rum/` → `rumModules` (via [hjem](https://github.com/feel-co/hjem) and optional [hjem-rum](https://github.com/snugnug/hjem-rum))
 - `system-configuration.nix` → `systemConfigs` (via system-manager)
+
+`contrib/hjem.nix` evaluates standalone Hjem configurations with Manifest v3 (`manifest`, `packages`, `config`, `options`, `build`), defaults `user`, `directory`, and `clobberFiles = true`, and automatically imports `hjem-rum.hjemModules.default` (and `hjem-impure.hjemModules.default`) when present in `inputs`. Like `home-manager`, it supports a `system.nix` sibling file to override the target system.
 
 home-manager needs a concrete `pkgs` (it can't infer the platform like `nixosSystem`), so
 `homeConfigurations` are built for the first entry of `systems` by default. A host can override
@@ -143,6 +153,7 @@ red-tape.mkFlake {
   modules = [
     (import "${inputs.red-tape}/contrib/darwin.nix")       # modules/darwin/ → darwinModules
     (import "${inputs.red-tape}/contrib/home-manager.nix") # modules/home/  → homeModules
+    (import "${inputs.red-tape}/contrib/hjem.nix")         # modules/hjem/  → hjemModules, modules/rum/ → rumModules
   ];
 };
 ```
@@ -167,7 +178,12 @@ red-tape.mkFlake {
 |---|---|
 | `contrib/darwin.nix` | `darwin` host type → `darwinConfigurations`, `modules/darwin/` → `darwinModules` |
 | `contrib/home-manager.nix` | `home-manager` host type → `homeConfigurations`, `modules/home/` → `homeModules` |
+| `contrib/hjem.nix` | `hjem` host/user type (`hjem-configuration.nix` / `home-configuration.nix`) → `hjemConfigurations` (Manifest v3), `modules/hjem/` → `hjemModules`, `modules/rum/` → `rumModules` |
 | `contrib/system-manager.nix` | `system-manager` host type → `systemConfigs` |
+
+### Hjem Schemas
+
+`red-tape` also exports `hjemSchemas` (`hjemConfigurations`, `hjemModules`, `rumModules`) for `nix flake check` / Determinate Nix schema validation.
 
 ## Comparison
 

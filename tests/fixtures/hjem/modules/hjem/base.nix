@@ -1,0 +1,3 @@
+{
+  clobberFiles = true;
+}

@@ -37,6 +37,14 @@
             pkgs = pkgsFor hostSystem;
             lib = inputs.nixpkgs.lib or pkgs.lib;
             isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
+            perSystem = builtins.mapAttrs (
+              _: input:
+              if builtins.isAttrs input then
+                (input.legacyPackages.${hostSystem} or { })
+                // (input.packages.${hostSystem} or { })
+              else
+                input
+            ) inputs;
 
             hjem-lib =
               if hjem ? hjem-lib then
@@ -84,7 +92,7 @@
                 info.configPath
               ];
               specialArgs = specialArgs // {
-                inherit pkgs hjem-lib utils;
+                inherit perSystem pkgs hjem-lib utils;
                 hostName = name;
               };
             };

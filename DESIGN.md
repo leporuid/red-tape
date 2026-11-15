@@ -18,7 +18,7 @@ Scanning and builder primitives used by individual modules. Scanning functions o
 
 Scanning:
 - **`scanDir path`** — Reads a directory and returns `{ name = { path; type; }; }` for each `.nix` file or subdirectory with `default.nix`. Strips `.nix` extensions.
-- **`scanHosts hostsDir hostTypes`** — Scans `hosts/` subdirectories, matching against an ordered list of `{ type, file }` specs. First match wins.
+- **`scanHosts hostsDir hostTypes`** — Scans `users/` and `hosts/` subdirectories, matching against an ordered list of `{ type, file }` specs. First match wins.
 - **`scanEntries { dir?, single?, singleName? }`** — Scans a directory for entries with optional single-file fallback. Used by packages, devshells, and checks.
 - **`scanSubdirs path f`** — Lists subdirectories of a path and applies `f` to each. Used by modules (`scanSubdirs p scanDir`) and templates (`scanSubdirs p (p: { path = p; })`).
 
@@ -41,7 +41,7 @@ project ──→ scope ──→ packages  (scans packages/, package.nix)
                  ├──→ formatter (scans formatter.nix)
                  └──→ checks    (scans checks/; also depends on packages, devshells, formatter, hosts)
 
-project ──→ hosts      (scans hosts/ via scanHosts; depends on contrib)
+project ──→ hosts      (scans users/ and hosts/ via scanHosts; depends on contrib)
        ├──→ modules    (scans modules/{type}/; depends on contrib)
        ├──→ templates  (scans templates/)
        └──→ lib        (scans lib/default.nix)
@@ -78,7 +78,7 @@ Contrib modules provide two things that the `hosts` module picks up via its `con
 1. **`scanHostTypes`** — `{ type, file }` specs appended to `coreHostTypes` for host discovery
 2. **`hostTypes.${type}`** — `{ outputKey, build }` for the builder
 
-See `contrib/darwin.nix`, `contrib/home-manager.nix`, and `contrib/system-manager.nix` for examples.
+See `contrib/darwin.nix`, `contrib/home-manager.nix`, `contrib/hjem.nix`, and `contrib/system-manager.nix` for examples.
 
 ### Custom Module Types
 
@@ -95,9 +95,9 @@ This can be set via contrib modules that set `"/red-tape/modules".moduleTypes`, 
 Tests use [nix-unit](https://github.com/nix-community/nix-unit) and live in `tests/`:
 
 - **Scanning tests** (`scan-dir.nix`, `discover.nix`) — Test scanning primitives and per-type patterns against fixtures
-- **Builder tests** (`integration.nix`, `hosts.nix`, `modules-export.nix`, etc.) — Test build logic with mock pkgs
+- **Builder tests** (`integration.nix`, `hosts.nix`, `hjem.nix`, `modules-export.nix`, etc.) — Test build logic (including `contrib/hjem.nix` and `hjemSchemas`) with mock pkgs
 - **Module tree tests** (`module.nix`) — Test the full adios-flake module tree end-to-end
 - **Extensibility tests** (`extensibility.nix`) — Test custom host types and module types
 - **Prefix tests** (`prefix.nix`) — Test prefix-based discovery
 
-All tests are aggregated in `tests/default.nix` and run via `nix run nixpkgs#nix-unit -- tests/default.nix`.
+All tests are aggregated in `tests/default.nix` and run via `nix develop -c nix-unit tests/default.nix`.

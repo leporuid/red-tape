@@ -40,6 +40,41 @@
 
       formatter = eachSystem (pkgs: pkgs.nixfmt-tree);
 
+      hjemSchemas = {
+        hjemConfigurations = {
+          version = 1;
+          doc = "The `hjemConfigurations` flake output defines standalone Hjem configurations with Manifest v3.";
+          inventory = output: {
+            children = builtins.mapAttrs (_: cfg: {
+              what = "Hjem configuration";
+              evalChecks.hasManifest = cfg ? manifest && (cfg.manifest.version or null) == 3;
+            }) output;
+          };
+        };
+
+        hjemModules = {
+          version = 1;
+          doc = "The `hjemModules` flake output defines importable Hjem modules.";
+          inventory = output: {
+            children = builtins.mapAttrs (name: _: {
+              what = "Hjem module";
+              evalChecks.isValid = builtins.isAttrs output.${name} || builtins.isFunction output.${name};
+            }) output;
+          };
+        };
+
+        rumModules = {
+          version = 1;
+          doc = "The `rumModules` flake output defines importable Hjem-Rum modules.";
+          inventory = output: {
+            children = builtins.mapAttrs (name: _: {
+              what = "Hjem-Rum module";
+              evalChecks.isValid = builtins.isAttrs output.${name} || builtins.isFunction output.${name};
+            }) output;
+          };
+        };
+      };
+
       devShells = eachSystem (pkgs: {
         default = pkgs.mkShell {
           packages = [

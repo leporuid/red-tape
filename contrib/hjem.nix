@@ -30,8 +30,7 @@
           }:
           let
             hjem =
-              inputs.hjem
-                or (throw "red-tape: hjem contrib needs inputs.hjem (e.g. `github:feel-co/hjem`)");
+              inputs.hjem or (throw "red-tape: hjem contrib needs inputs.hjem (e.g. `github:feel-co/hjem`)");
 
             systemFile = info.hostPath + "/system.nix";
             hostSystem = if builtins.pathExists systemFile then import systemFile else system;
@@ -63,8 +62,12 @@
             # Platform-specific Hjem core modules + optional ecosystem extensions
             hjemModules = lib.flatten [
               (lib.optional (builtins.pathExists "${hjem}/modules/common/user.nix") "${hjem}/modules/common/user.nix")
-              (lib.optional (!isDarwin && builtins.pathExists "${hjem}/modules/nixos/systemd.nix") "${hjem}/modules/nixos/systemd.nix")
-              (lib.optional (isDarwin && builtins.pathExists "${hjem}/modules/darwin/user.nix") "${hjem}/modules/darwin/user.nix")
+              (lib.optional (
+                !isDarwin && builtins.pathExists "${hjem}/modules/nixos/systemd.nix"
+              ) "${hjem}/modules/nixos/systemd.nix")
+              (lib.optional (
+                isDarwin && builtins.pathExists "${hjem}/modules/darwin/user.nix"
+              ) "${hjem}/modules/darwin/user.nix")
               (lib.optional (inputs ? hjem-rum) inputs.hjem-rum.hjemModules.default)
               (lib.optional (inputs ? hjem-impure) inputs.hjem-impure.hjemModules.default)
             ];
@@ -89,14 +92,15 @@
             cfg = evalResult.config;
 
             # Synthesize Hjem Manifest v3 schema
-            rawFiles =
-              [ (cfg.files or { }) ]
-              ++ lib.optionals (cfg ? xdg) [
-                (cfg.xdg.cache.files or { })
-                (cfg.xdg.config.files or { })
-                (cfg.xdg.data.files or { })
-                (cfg.xdg.state.files or { })
-              ];
+            rawFiles = [
+              (cfg.files or { })
+            ]
+            ++ lib.optionals (cfg ? xdg) [
+              (cfg.xdg.cache.files or { })
+              (cfg.xdg.config.files or { })
+              (cfg.xdg.data.files or { })
+              (cfg.xdg.state.files or { })
+            ];
 
             activeFiles = lib.flatten (
               map (set: lib.filter (file: file.enable or true) (builtins.attrValues set)) rawFiles
@@ -112,9 +116,11 @@
           {
             inherit manifest packages;
             inherit (evalResult) config options;
-            build = pkgs.writeText "build.json" (builtins.toJSON {
-              inherit manifest packages;
-            });
+            build = pkgs.writeText "build.json" (
+              builtins.toJSON {
+                inherit manifest packages;
+              }
+            );
           };
       };
 

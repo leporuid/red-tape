@@ -22,6 +22,10 @@ let
         type = "attrset";
         scope = "flake";
       };
+      schemas = {
+        type = "attrset";
+        scope = "flake";
+      };
     };
     inputs = {
       packages = {

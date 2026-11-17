@@ -2,6 +2,7 @@
 { adios-flake }:
 let
   adiosFlakeLib = adios-flake.lib or adios-flake;
+  internal = import ./internal.nix;
   defaultModules = import ../modules;
 
   # Build the red-tape root module with contrib submodules dynamically wired.
@@ -76,5 +77,6 @@ let
 in
 {
   inherit mkFlake;
+  inherit (internal) mkPerSystem;
   modules = defaultModules;
 }

@@ -29,6 +29,10 @@
     {
       inherit (redTape) modules;
 
+      lib = {
+        inherit (redTape) mkPerSystem;
+      };
+
       mkFlake =
         args:
         redTape.mkFlake (

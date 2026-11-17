@@ -15,7 +15,7 @@
   impl =
     { inputs, results, ... }:
     let
-      inherit (builtins) isAttrs mapAttrs;
+      internal = import ../lib/internal.nix;
       system = inputs.nixpkgs.system;
       pkgs = inputs.nixpkgs.pkgs;
       flakeInputs = results.project.inputs;
@@ -29,9 +29,10 @@
         lib = pkgs.lib;
         flake = self;
         inputs = flakeInputs;
-        perSystem = mapAttrs (
-          _: i: if isAttrs i then (i.legacyPackages.${system} or { }) // (i.packages.${system} or { }) else i
-        ) flakeInputs;
+        perSystem = internal.mkPerSystem {
+          inputs = flakeInputs;
+          inherit system;
+        };
       };
     };
 }

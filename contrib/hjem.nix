@@ -37,17 +37,18 @@
             pkgs = pkgsFor hostSystem;
             lib = inputs.nixpkgs.lib or pkgs.lib;
             isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
-            perSystem = builtins.mapAttrs (
-              _: input:
-              if builtins.isAttrs input then
-                (input.legacyPackages.${hostSystem} or { }) // (input.packages.${hostSystem} or { })
-              else
-                input
-            ) inputs;
+            perSystem = (import ../lib/internal.nix).mkPerSystem {
+              inherit inputs;
+              system = hostSystem;
+            };
 
             hjem-lib =
-              if hjem ? hjem-lib then
-                hjem.hjem-lib.${hostSystem} or hjem.hjem-lib.default or { }
+              if hjem ? hjem-lib.${hostSystem} then
+                hjem.hjem-lib.${hostSystem}
+              else if builtins.pathExists "${hjem}/lib.nix" then
+                import "${hjem}/lib.nix" { inherit lib pkgs; }
+              else if hjem ? hjem-lib then
+                hjem.hjem-lib.default or { }
               else
                 hjem.lib or { };
 

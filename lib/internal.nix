@@ -9,6 +9,7 @@ let
     functionArgs
     head
     intersectAttrs
+    isAttrs
     listToAttrs
     map
     mapAttrs
@@ -202,6 +203,16 @@ let
       }) (attrNames a)
     );
 
+  mkPerSystem =
+    {
+      inputs,
+      system,
+      ...
+    }:
+    mapAttrs (
+      _: i: if isAttrs i then (i.legacyPackages.${system} or { }) // (i.packages.${system} or { }) else i
+    ) inputs;
+
   # ── Host builders ──────────────────────────────────────────────────
 
   # Host type sentinels — checked in order, first match wins.
@@ -341,6 +352,7 @@ in
     callFile
     buildAll
     filterPlatforms
+    mkPerSystem
     withPrefix
     coreHostTypes
     defaultHostTypes

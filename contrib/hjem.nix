@@ -19,6 +19,9 @@
 
       hostTypes.hjem = {
         outputKey = "hjemConfigurations";
+        # Standalone Hjem manifests are validated via hjemSchemas, not system toplevel builds.
+        getSystem = _: null;
+        getCheckTarget = _: null;
         build =
           {
             name,

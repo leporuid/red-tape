@@ -63,4 +63,15 @@ in
     expr = mkTemplates (fixtures + "/empty");
     expected = { };
   };
+
+  testCallableFlakeTemplateFallback = {
+    expr =
+      let
+        res = (import ../modules/templates.nix).impl {
+          results.project.resolvedSrc = fixtures + "/fn-template";
+        };
+      in
+      res.templates.callable.description;
+    expected = "callable";
+  };
 }

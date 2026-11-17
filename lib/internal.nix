@@ -327,12 +327,16 @@ let
               n:
               let
                 h = loaded.${n};
-                s = h.value.config.nixpkgs.hostPlatform.system or null;
+                builder = hostTypes.${h.type};
+                getSystem = builder.getSystem or (v: v.config.nixpkgs.hostPlatform.system or null);
+                getCheckTarget = builder.getCheckTarget or (v: v.config.system.build.toplevel or null);
+                s = getSystem h.value;
+                target = if s == system then getCheckTarget h.value else null;
               in
-              if s == system then
+              if target != null then
                 {
                   name = "${h.type}-${n}";
-                  value = h.value.config.system.build.toplevel;
+                  value = target;
                 }
               else
                 null

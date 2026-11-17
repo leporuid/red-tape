@@ -21,10 +21,11 @@ in
         name: e:
         let
           f = e.path + "/flake.nix";
+          flk = if pathExists f then import f else null;
         in
         {
           inherit (e) path;
-          description = if pathExists f then (import f).description or name else name;
+          description = if builtins.isAttrs flk then flk.description or name else name;
         }
       ) found;
     in

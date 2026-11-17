@@ -13,6 +13,7 @@
       ];
       hostTypes.system-manager = {
         outputKey = "systemConfigs";
+        getCheckTarget = h: h.config.system.build.toplevel or h.config.build.toplevel or null;
         build =
           {
             name,

@@ -10,6 +10,16 @@ let
   };
 
   empty = buildModules { discovered = { }; };
+
+  selfModules = buildModules {
+    discovered = scanSubdirs (fixtures + "/self-modules/modules") scanDir;
+    inputs = {
+      nixpkgs = "fake-nixpkgs";
+    };
+    self = {
+      outPath = "/my/flake";
+    };
+  };
 in
 {
   testOutputKeys = {
@@ -98,5 +108,15 @@ in
   testEmptyModules = {
     expr = empty;
     expected = { };
+  };
+
+  testSelfWithConfigStaysPath = {
+    expr = builtins.isPath selfModules.nixosModules.with-self;
+    expected = true;
+  };
+
+  testSelfWithInputsStaysPath = {
+    expr = builtins.isPath selfModules.nixosModules.self-inputs;
+    expected = true;
   };
 }

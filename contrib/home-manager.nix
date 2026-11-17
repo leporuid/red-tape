@@ -13,6 +13,8 @@
       ];
       hostTypes.home-manager = {
         outputKey = "homeConfigurations";
+        getSystem = h: h.pkgs.stdenv.hostPlatform.system or h.pkgs.system or null;
+        getCheckTarget = h: h.activationPackage or h.config.home.activationPackage or null;
         build =
           {
             name,

@@ -30,7 +30,7 @@
       inherit (redTape) modules;
 
       lib = {
-        inherit (redTape) mkPerSystem;
+        inherit (redTape) mkPerSystem mkHjemSpecialArgs;
       };
 
       mkFlake =

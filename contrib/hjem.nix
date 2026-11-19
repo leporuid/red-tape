@@ -19,9 +19,8 @@
 
       hostTypes.hjem = {
         outputKey = "hjemConfigurations";
-        # Standalone Hjem manifests are validated via hjemSchemas, not system toplevel builds.
-        getSystem = _: null;
-        getCheckTarget = _: null;
+        getSystem = v: v.system;
+        getCheckTarget = v: v.build;
         build =
           {
             name,
@@ -40,7 +39,7 @@
             pkgs = pkgsFor hostSystem;
             lib = inputs.nixpkgs.lib or pkgs.lib;
             isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
-            perSystem = (import ../lib/internal.nix).mkPerSystem {
+            baseHjemSpecialArgs = (import ../lib/internal.nix).mkHjemSpecialArgs {
               inherit inputs;
               system = hostSystem;
             };
@@ -91,15 +90,16 @@
                 }
                 info.configPath
               ];
-              specialArgs = specialArgs // {
-                inherit
-                  perSystem
-                  pkgs
-                  hjem-lib
-                  utils
-                  ;
-                hostName = name;
-              };
+              specialArgs =
+                baseHjemSpecialArgs
+                // specialArgs
+                // {
+                  inherit pkgs hjem-lib;
+                  hostName = specialArgs.hostName or name;
+                }
+                // lib.optionalAttrs (!isDarwin) {
+                  inherit utils;
+                };
             };
 
             cfg = evalResult.config;
@@ -136,6 +136,11 @@
                 inherit manifest packages;
               }
             );
+            system = hostSystem;
+            module = {
+              _file = toString info.configPath;
+              imports = [ info.configPath ];
+            };
           };
       };
 

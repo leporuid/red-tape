@@ -77,6 +77,6 @@ let
 in
 {
   inherit mkFlake;
-  inherit (internal) mkPerSystem;
+  inherit (internal) mkPerSystem mkHjemSpecialArgs;
   modules = defaultModules;
 }

@@ -116,6 +116,32 @@ in
     };
   };
 
+  testHjemModuleAndSystemExport = {
+    expr =
+      let
+        alice = hjemResult.hjemConfigurations.alice;
+      in
+      {
+        hasModule = alice ? module && builtins.isAttrs alice.module;
+        hasImports = alice ? module && builtins.isList alice.module.imports;
+        system = alice.system;
+      };
+    expected = {
+      hasModule = true;
+      hasImports = true;
+      system = "x86_64-linux";
+    };
+  };
+
+  testHjemAutoChecks = {
+    expr =
+      let
+        checks = hjemResult.autoChecks "x86_64-linux";
+      in
+      builtins.attrNames checks;
+    expected = [ "hjem-alice" ];
+  };
+
   testHjemSchemasConfigurations = {
     expr =
       let

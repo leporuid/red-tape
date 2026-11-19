@@ -213,6 +213,18 @@ let
       _: i: if isAttrs i then (i.legacyPackages.${system} or { }) // (i.packages.${system} or { }) else i
     ) inputs;
 
+  mkHjemSpecialArgs =
+    {
+      inputs,
+      system,
+      ...
+    }:
+    {
+      inherit inputs;
+      flake = inputs.self or null;
+      perSystem = mkPerSystem { inherit inputs system; };
+    };
+
   # ── Host builders ──────────────────────────────────────────────────
 
   # Host type sentinels — checked in order, first match wins.
@@ -357,6 +369,7 @@ in
     buildAll
     filterPlatforms
     mkPerSystem
+    mkHjemSpecialArgs
     withPrefix
     coreHostTypes
     defaultHostTypes
